@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Life Insurance Flashcards</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --gold:#D4AF37;
+    --gold-bright:#F4CC4B;
+    --black:#0B0B0C;
+    --charcoal:#1A1A1C;
+    --card:#151516;
+    --text:#F5F2E8;
+    --muted:#9A9690;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:radial-gradient(circle at 20% 0%, #1f1c10 0%, var(--black) 55%);
+    color:var(--text);
+    font-family:'Poppins',sans-serif;
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding:32px 16px 60px;
+  }
+  h1{
+    font-family:'Archivo Black', sans-serif;
+    text-transform:uppercase;
+    letter-spacing:1px;
+    font-size:clamp(22px,4vw,32px);
+    color:var(--gold-bright);
+    margin:0 0 4px;
+    text-align:center;
+  }
+  .subtitle{
+    color:var(--muted);
+    font-size:13px;
+    letter-spacing:2px;
+    text-transform:uppercase;
+    margin-bottom:28px;
+    text-align:center;
+  }
+  .deck-bar{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    justify-content:center;
+    margin-bottom:22px;
+  }
+  .chip{
+    background:var(--charcoal);
+    border:1px solid #2b2820;
+    color:var(--text);
+    padding:8px 16px;
+    border-radius:999px;
+    font-size:12px;
+    font-weight:600;
+    cursor:pointer;
+    transition:all .15s ease;
+  }
+  .chip.active{
+    background:var(--gold);
+    color:var(--black);
+    border-color:var(--gold);
+  }
+  .progress{
+    color:var(--muted);
+    font-size:13px;
+    margin-bottom:14px;
+    letter-spacing:1px;
+  }
+  .progress span{color:var(--gold-bright);font-weight:600;}
+  .card-wrap{
+    perspective:1400px;
+    width:100%;
+    max-width:520px;
+    height:320px;
+  }
+  .card{
+    position:relative;
+    width:100%;
+    height:100%;
+    transform-style:preserve-3d;
+    transition:transform .5s cubic-bezier(.4,.2,.2,1);
+    cursor:pointer;
+  }
+  .card.flipped{transform:rotateY(180deg);}
+  .face{
+    position:absolute;
+    inset:0;
+    backface-visibility:hidden;
+    border-radius:18px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    padding:32px;
+    border:1px solid #2b2820;
+    box-shadow:0 20px 40px rgba(0,0,0,.5);
+  }
+  .front{
+    background:linear-gradient(145deg,#181815,#101010);
+  }
+  .back{
+    background:linear-gradient(145deg,var(--gold),#8f6f14);
+    color:var(--black);
+    transform:rotateY(180deg);
+  }
+  .tag{
+    position:absolute;
+    top:16px;
+    left:18px;
+    font-size:10px;
+    letter-spacing:2px;
+    text-transform:uppercase;
+    color:var(--muted);
+  }
+  .back .tag{color:rgba(0,0,0,.55);}
+  .term{
+    font-family:'Archivo Black', sans-serif;
+    font-size:clamp(18px,3.5vw,26px);
+    line-height:1.3;
+    color:var(--gold-bright);
+  }
+  .definition{
+    font-size:15px;
+    line-height:1.55;
+    font-weight:500;
+    color:var(--black);
+  }
+  .hint{
+    position:absolute;
+    bottom:14px;
+    font-size:11px;
+    color:var(--muted);
+    letter-spacing:1px;
+    text-transform:uppercase;
+  }
+  .back .hint{color:rgba(0,0,0,.5);}
+  .controls{
+    display:flex;
+    gap:14px;
+    align-items:center;
+    margin-top:30px;
+  }
+  .btn{
+    background:var(--charcoal);
+    border:1px solid #2b2820;
+    color:var(--text);
+    padding:12px 22px;
+    border-radius:10px;
+    font-family:'Poppins',sans-serif;
+    font-weight:600;
+    font-size:14px;
+    cursor:pointer;
+    transition:all .15s ease;
+  }
+  .btn:hover{border-color:var(--gold);color:var(--gold-bright);}
+  .btn.primary{
+    background:var(--gold);
+    color:var(--black);
+    border-color:var(--gold);
+  }
+  .btn.primary:hover{background:var(--gold-bright);}
+  .btn:disabled{opacity:.35;cursor:not-allowed;}
+  .footer-actions{
+    margin-top:18px;
+    display:flex;
+    gap:10px;
+  }
+  .small-btn{
+    background:none;
+    border:none;
+    color:var(--muted);
+    font-size:12px;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    cursor:pointer;
+    text-decoration:underline;
+  }
+  .small-btn:hover{color:var(--gold-bright);}
+  @media (max-width:480px){
+    .card-wrap{height:360px;}
+  }
+</style>
+</head>
+<body>
+
+<h1>Life Insurance Flashcards</h1>
+<div class="subtitle">TC Dream Chasers · FL 2-15 Study Deck</div>
+
+<div class="deck-bar" id="deckBar"></div>
+
+<div class="progress">Card <span id="cur">1</span> / <span id="total">0</span></div>
+
+<div class="card-wrap">
+  <div class="card" id="card">
+    <div class="face front">
+      <div class="tag">Term</div>
+      <div class="term" id="termText"></div>
+      <div class="hint">Tap to flip</div>
+    </div>
+    <div class="face back">
+      <div class="tag">Definition</div>
+      <div class="definition" id="defText"></div>
+      <div class="hint">Tap to flip back</div>
+    </div>
+  </div>
+</div>
+
+<div class="controls">
+  <button class="btn" id="prevBtn">← Prev</button>
+  <button class="btn primary" id="flipBtn">Flip</button>
+  <button class="btn" id="nextBtn">Next →</button>
+</div>
+
+<div class="footer-actions">
+  <button class="small-btn" id="shuffleBtn">Shuffle deck</button>
+  <button class="small-btn" id="resetBtn">Reset order</button>
+</div>
+
+<script>
+const decks = {
+  "Term Life": [
+    ["Term life insurance", "Pure/temporary protection: max coverage at lowest initial premium, no cash value, protects against financial loss from early death."],
+    ["Level term life", "A level amount of protection for a specified period, then the policy expires."],
+    ["Increasing term life", "Death benefit increases at periodic intervals over the policy's term."],
+    ["Decreasing term life", "Death benefit amount decreases gradually over the term of protection."],
+    ["Mortgage redemption insurance", "A type of decreasing term life insurance policy."],
+    ["Credit life insurance", "Limited benefit (term) policy covering a debtor's life; pays the loan balance if the debtor dies before repayment. Max benefit = value of the loan."],
+    ["Option to convert", "Lets the insured convert/exchange a term policy for whole life or permanent, without evidence of insurability."],
+    ["Cost of insurance (conversion)", "The most important factor when deciding whether to convert term life at original age vs. attained age."],
+    ["Interim term life insurance", "Convertible term insurance for someone who wants immediate protection but can't yet afford permanent. Temp premium = original app age; permanent premium = attained age."],
+    ["Option to renew", "Allows the policy owner to renew term insurance before expiration without evidence of insurability."],
+    ["Step-up premium", "A steady increase in premium."],
+    ["Annually Renewable Term (ART/YRT)", "Coverage for one year; renewable each year without evidence of insurability."],
+    ["Advantages of term life", "Cheaper premiums than permanent, protects insurability if renewable/convertible, pairs with debt/mortgages or supplements whole life, most coverage for lowest cost."],
+    ["Disadvantages of term life", "Protection ends at policy termination, rising premiums if renewable/convertible, few death claims (temporary), no cash value/savings."]
+  ],
+  "Whole Life": [
+    ["Whole life insurance", "Permanent insurance: pays face amount whenever death occurs. Level fixed premium, tax-deferred cash value, matures at age 100."],
+    ["Payment period rule", "The shorter the payment period, the higher the premium."],
+    ["Ordinary/Straight/Continuous Premium Life", "Most basic whole life form; premiums payable as long as insured is alive."],
+    ["Limited Payment Whole Life", "Predetermined premium for a limited payment period."],
+    ["Single premium whole life", "Most expensive initially, creates immediate cash value, funds the reserve fast, may cost less overall than spreading premiums."],
+    ["Modified whole life insurance", "Lower premium than straight whole life for an intro period (e.g., 5 yrs), then jumps higher than an originally-issued straight life policy would've cost."],
+    ["Graded premium whole life", "Lower premium than straight WL early on, but increases annually during the initial period, then fixes at a higher amount for life."],
+    ["Enhanced/Economatic/Extraordinary Whole Life", "Low premium, participating permanent insurance policy."],
+    ["Indexed Whole Life Insurance", "Face amount increases with the CPI, no evidence of insurability required."],
+    ["Equity Indexed Whole Life", "Policyholder shares in a % of growth of an indexed investment (e.g., S&P-tied fund); min interest & death benefit guaranteed. Not a security."]
+  ],
+  "Non-Traditional & UL": [
+    ["Adjustable whole life (blended/combo)", "Combines term + permanent in one flexible plan; face amount & premium can change; forward-looking; adjustable death benefit."],
+    ["Universal Life (UL)", "Term policy w/ cash value, flexible premiums, adjustable death benefit; tax-deferred cash value at money market rates; can surrender for full cash value anytime."],
+    ["Target premium", "A suggested premium used in universal life policies."],
+    ["UL Death Benefit Option A", "Cash value + remaining pure insurance (decreasing term + increasing cash value)."],
+    ["UL Death Benefit Option B", "Face amount (pure insurance) + cash values (level term + increasing cash value)."],
+    ["Equity Index Universal Life", "Combines traditional life insurance features with interest potential tied to upward movement of an equity index."]
+  ],
+  "SEC-Regulated": [
+    ["Variable Life (VL)", "Guaranteed minimum death benefit; death benefit & cash value vary w/ investment performance; cash value in separate account invested in securities; owner controls investments; fixed premium."],
+    ["Universal Variable Whole Life (VUL)", "Hybrid of UL + VWL: flexible premiums, owner controls the investment portion, combines investment feature with flexible premium."]
+  ],
+  "Special Use Policies": [
+    ["Family plan policy", "Insures all family members under one policy."],
+    ["Family maintenance policy", "Combines whole life + level term; provides income for a specific period starting on the insured's date of death."],
+    ["Joint life policy", "Covers two or more people; pays benefit on the FIRST death."],
+    ["Last-to-die (survivor) policy", "Covers two or more people; pays benefit on the death of the LAST covered person."],
+    ["Juvenile life insurance policy", "Any ordinary life insurance policy that insures the life of a minor."],
+    ["Endowment policy", "Cash value grows fast so the policy matures/endows by a specified date (before age 100). Higher premiums than WL; pays on death OR on surviving to the endowment date."],
+    ["Modified Endowment Contract (MEC)", "An overfunded policy per IRS tables — fails the '7-pay test' (premiums in first 7 yrs exceed what's needed to pay it up in 7 yrs). Doesn't meet IRS definition of life insurance."],
+    ["Industrial life insurance", "Small issue amounts (e.g., $1,000); premiums collected weekly/monthly."],
+    ["Monthly debit ordinary life insurance", "Combination of industrial life insurance and ordinary life insurance."]
+  ],
+  "Other Concepts": [
+    ["Face amount plus cash value policy", "Pays the face amount PLUS the cash value upon the insured's death."],
+    ["Stranger-Owned Life Insurance (STOLI)", "Someone buys life insurance purely to sell it to a third party who has no insurable interest and couldn't legally buy it directly."],
+    ["Non-medical life insurance", "Typically no medical exam required; tends to be more expensive than medically underwritten policies."],
+    ["Participating life insurance policy", "Pays dividends to the policyholder from company earnings."],
+    ["Non-participating policy", "No right to share in excess earnings — does not pay dividends."]
+  ],
+  "Annuities Basics": [
+    ["Primary use of an annuity", "To provide income for retirement."],
+    ["Is an annuity life insurance?", "No — an annuity is NOT a life insurance contract."],
+    ["Insurance company (insurer) role", "Invests annuity contributions and makes guarantees to the contract owner as stipulated in the contract."],
+    ["Contract/policy owner role", "Invests in the annuity; can terminate it, withdraw funds, name the annuitant, name/change the beneficiary, and possibly change investments."],
+    ["Annuitant", "The person whose life determines the annuity payouts."],
+    ["Beneficiary (annuity)", "The person who benefits upon the death of the annuitant."],
+    ["Who is the annuity agreement between?", "Always between the contract owner and the insurance company, regardless of who sold it (banker, planner, brokerage, etc.)."],
+    ["Life annuity guarantee", "Guarantees the annuitant cannot outlive the payments."],
+    ["Death of contract owner", "Generally triggers a payout to the beneficiary."],
+    ["Accumulation (pay-in) period", "The time during which funds are being paid into the annuity."],
+    ["Annuity (pay-out) period", "When the annuity stops accumulating and starts generating regular benefit payments."],
+    ["Benefit payment frequency", "Monthly, quarterly, semiannually, or annually."],
+    ["Surrender charges (annuity)", "Apply for the first five to eight years of the contract."],
+    ["Bailout provision", "Lets the annuity owner surrender without surrender charges if interest rates fall below a stated level within a specified period."],
+    ["Ways annuity principal is funded", "Immediately with a single premium, or over time with periodic premiums."],
+    ["Fixed annuities", "Provide a guaranteed rate of return."],
+    ["Equity Indexed Annuities (EIA)", "A type of fixed annuity offering potential for higher credited returns than traditional fixed annuities, while guaranteeing principal."],
+    ["Market Value Adjusted (MVA) annuity", "Interest rate is fixed and guaranteed if the contract is held for the period specified in the policy."],
+    ["Variable annuities", "Shift the investment risk from the insurer to the contract owner."],
+    ["Selling variable annuities — requirements", "Must be registered with FINRA AND hold a state insurance license."],
+    ["Immediate annuity", "First benefit payment is made one payment interval after the date of purchase."],
+    ["Deferred annuity", "Accumulates interest tax-deferred; income payments begin at a specified future date."],
+    ["Annuity period", "The income phase of the annuity."]
+  ],
+  "Annuity Income Options": [
+    ["Fixed amount option", "Annuitant receives a fixed payment until the contract value is exhausted."],
+    ["Straight life income option", "Pays the annuitant a guaranteed income for the annuitant's lifetime."],
+    ["Period certain option", "Not based on life contingency."],
+    ["Life with period certain option", "Pays income for life but guarantees a definite minimum period of payments."],
+    ["Cash refund option", "Provides a guaranteed income to the annuitant for life."],
+    ["Installment refund option", "Guarantees the total annuity fund is paid out to the annuitant or their beneficiary."],
+    ["Temporary annuity certain", "Payments guaranteed for a specified number of years."],
+    ["Joint and full survivor option", "Pays the annuity to two people."],
+    ["Joint and two-thirds survivor", "Survivor's income is reduced to two-thirds of the original joint income."],
+    ["Joint and one-half survivor", "Survivor's income is reduced to one-half of the original joint income."],
+    ["Annuity ↔ life insurance exchange", "An annuity contract cannot be exchanged tax-free for a life insurance contract."],
+    ["Annuity benefit payments (composition)", "A combination of principal and interest."],
+    ["Corporate-owned life insurance (tax treatment)", "Generally treated as a deductible business expense."],
+    ["Qualified plan", "A tax-deferred arrangement established by an employer to provide retirement benefits for employees."],
+    ["Tax-Sheltered Annuity (TSA)", "An annuity plan reserved for non-profit organizations and their employees, and school system (educational) employees."]
+  ],
+  "Uses of Life Insurance": [
+    ["Human Life Value Approach", "Calculates the money a person is expected to earn over her lifetime to determine the face amount of life insurance needed."],
+    ["Needs Approach", "Determines the amount of life insurance needed based on the individual's (or family's) financial goals and objectives."],
+    ["Sole proprietor death", "When a sole proprietor dies, the business also dies."],
+    ["Third-party ownership of a policy", "Widely used in business insurance and estate-planning situations."],
+    ["Buy-Sell Agreements", "Also referred to as business continuation agreements."],
+    ["Two-step business continuation plan", "1) Buy-Sell Plan, 2) Insurance Policy."],
+    ["Two types of buy-sell agreements (partnerships)", "Cross-purchase plans and Entity plans."],
+    ["Cross-purchase plan", "Each partner buys, pays premiums for, and is beneficiary of a life insurance policy on each other partner."],
+    ["Entity plan", "The partnership itself agrees to buy the deceased partner's share of the business."],
+    ["Closely held corporation", "Legally separate from its owners."],
+    ["Entity plan for closely held corporations", "Referred to as a stock redemption plan."],
+    ["Key person insurance — purpose", "Prevents the financial loss that may occur when an owner, officer, or manager dies."],
+    ["Corporate-owned life insurance (tax treatment)", "Generally treated as a deductible business expense."],
+    ["Deferred compensation", "An executive benefit letting an employer pay a highly paid employee at a later date."],
+    ["Salary Continuation Plan", "Corporate-sponsored benefit generally designed to replace an executive's income upon death, retirement, or disability."],
+    ["Executive bonus plan", "Non-qualified benefit where the employer pays a bonus to a selected employee, who uses it to pay premiums on a life insurance policy covering her own life."]
+  ]
+};
+
+let currentDeckName = Object.keys(decks)[0];
+let order = [];
+let idx = 0;
+let flipped = false;
+
+const deckBar = document.getElementById('deckBar');
+const cardEl = document.getElementById('card');
+const termEl = document.getElementById('termText');
+const defEl = document.getElementById('defText');
+const curEl = document.getElementById('cur');
+const totalEl = document.getElementById('total');
+
+function buildDeckBar(){
+  deckBar.innerHTML = '';
+  const allChip = document.createElement('button');
+  allChip.className = 'chip';
+  allChip.textContent = 'All Cards';
+  allChip.onclick = () => selectDeck('__all__');
+  deckBar.appendChild(allChip);
+
+  Object.keys(decks).forEach(name => {
+    const chip = document.createElement('button');
+    chip.className = 'chip';
+    chip.textContent = name;
+    chip.onclick = () => selectDeck(name);
+    deckBar.appendChild(chip);
+  });
+  updateChipStates();
+}
+
+function updateChipStates(){
+  [...deckBar.children].forEach(c => {
+    c.classList.toggle('active',
+      (c.textContent === 'All Cards' && currentDeckName === '__all__') ||
+      c.textContent === currentDeckName);
+  });
+}
+
+function getCurrentCards(){
+  if(currentDeckName === '__all__'){
+    return Object.values(decks).flat();
+  }
+  return decks[currentDeckName];
+}
+
+function selectDeck(name){
+  currentDeckName = name;
+  resetOrder();
+  updateChipStates();
+}
+
+function resetOrder(){
+  const cards = getCurrentCards();
+  order = cards.map((_, i) => i);
+  idx = 0;
+  flipped = false;
+  cardEl.classList.remove('flipped');
+  render();
+}
+
+function shuffle(){
+  for(let i = order.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [order[i], order[j]] = [order[j], order[i]];
+  }
+  idx = 0;
+  flipped = false;
+  cardEl.classList.remove('flipped');
+  render();
+}
+
+function render(){
+  const cards = getCurrentCards();
+  const c = cards[order[idx]];
+  termEl.textContent = c[0];
+  defEl.textContent = c[1];
+  curEl.textContent = idx + 1;
+  totalEl.textContent = cards.length;
+  document.getElementById('prevBtn').disabled = idx === 0;
+  document.getElementById('nextBtn').disabled = idx === cards.length - 1;
+}
+
+function flip(){
+  flipped = !flipped;
+  cardEl.classList.toggle('flipped', flipped);
+}
+
+cardEl.addEventListener('click', flip);
+document.getElementById('flipBtn').addEventListener('click', flip);
+document.getElementById('nextBtn').addEventListener('click', () => {
+  const cards = getCurrentCards();
+  if(idx < cards.length - 1){
+    idx++;
+    flipped = false;
+    cardEl.classList.remove('flipped');
+    render();
+  }
+});
+document.getElementById('prevBtn').addEventListener('click', () => {
+  if(idx > 0){
+    idx--;
+    flipped = false;
+    cardEl.classList.remove('flipped');
+    render();
+  }
+});
+document.getElementById('shuffleBtn').addEventListener('click', shuffle);
+document.getElementById('resetBtn').addEventListener('click', resetOrder);
+
+document.addEventListener('keydown', (e) => {
+  if(e.key === 'ArrowRight') document.getElementById('nextBtn').click();
+  if(e.key === 'ArrowLeft') document.getElementById('prevBtn').click();
+  if(e.key === ' '){ e.preventDefault(); flip(); }
+});
+
+buildDeckBar();
+selectDeck('__all__');
+</script>
+
+</body>
+</html>
